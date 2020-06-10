@@ -1,3 +1,4 @@
+Algoritmos
 6
 0.2
 0.2
@@ -6,4 +7,4 @@
 0.1
 0.1
 2
-CSVs/alumnos-mediociclo1.csv
+CSVs/alumnos-Algoritmos-mediociclo1.csv

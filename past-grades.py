@@ -8,6 +8,7 @@ import xlsxwriter
 # Notas = [EC1, EC2, Ex1, Ex2, Pr1, Pr2, Promedio]
 # Margenes = [Parecido, peor, mejor]
 # curso_por_ciclo = [2018-2, 2019-1, 2019-2]
+CURSO = []
 NOTAS = []
 PORCENTAJES = []
 CICLOS = 5
@@ -27,6 +28,7 @@ margenes = [[-1,+2],[-2, +1],[-1,+1],[-5, -2],[2, 3]]
 
 
 def getPercentages():
+  CURSO.append(input("Ingrese nombre del curso"))
   NOTAS.append(int(input("Ingrese el numero de notas en el curso de acuerdo a Intranet\nNumero: ")))
   print("Ingrese el peso de las notas en formato decimal. (Si vale 10%, colocar 0.1)")
   for i in range(NOTAS[0]):
@@ -93,6 +95,7 @@ def produceXLSX(file_name, alumnos):
   for i in range(1,j+1):
     sheet.write(row, i ,"", finalformat)
   sheet.write(row,j+1,aprobados, finalformat)
+  print("\n\nArchivo guardado como: " + file_name)
   book.close()
 
 def nuevo_estudiante():
@@ -117,7 +120,7 @@ def crearData(generate=False):
     for j in range(ALUMNOS_POR_CICLO):
       alumnos_de_curso.append(nuevo_estudiante())
     if (generate):
-      produceCSV("CSVs/alumnos-mediociclo"+str(i+1)+".csv",alumnos_de_curso)
+      produceCSV("CSVs/alumnos-"+CURSO[0]+"-mediociclo"+str(i+1)+".csv",alumnos_de_curso)
     NOTAS_POR_CICLO.append(alumnos_de_curso)
 
 def displayData():
@@ -153,7 +156,6 @@ def parseStudentGrades(file_name):
             for grade in row:
               grades.append(int(grade))
             line_count += 1
-            print('Processed {line_count} lines.')
             all_grades.append(grades)
   return all_grades
 
@@ -173,13 +175,12 @@ def chances(needed_grade, until):
 def getRate(notas):
   current_grade = hastaExamen(notas, len(notas))
   needed_grade = NOTA_MINIMA - current_grade
-  print("Needed grade is", needed_grade)
+  #print("Needed grade is", needed_grade)
   return chances(needed_grade, len(notas))/NUMERO_DE_ALUMNOS
 
 def run():
     getPercentages()
     crearData()
-    displayData()
     print("Ingrese la opcion de prediccion (1 o 2): \n1) Nota singular\n2) CSV de notas\n")
     opcion = input("")
     if (opcion == "1"):
@@ -192,7 +193,7 @@ def run():
       for student in all_grades:
         rate = getRate(student)
         student.append(rate)
-        print(rate)
-      produceXLSX("prediction.xlsx", all_grades)
+        # print(rate)
+      produceXLSX("prediccion_"+CURSO[0]+".xlsx", all_grades)
 
 run()
