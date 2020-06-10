@@ -84,7 +84,7 @@ def produceXLSX(file_name, alumnos):
       sheet.write(row, i, grades[i])
     for j in range(i,NOTAS[0]):
       sheet.write(row,j, "?")
-    if(grades[-1] > 0.6):
+    if(grades[-1] > 0.5):
       aprobados += 1
       sheet.write(row, j+1, grades[-1], passformat)
     else:
