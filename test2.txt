@@ -6,4 +6,4 @@
 0.1
 0.1
 2
-CSVs/alumnos-ciclo1.csv
+CSVs/alumnos-mediociclo1.csv

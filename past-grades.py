@@ -1,5 +1,7 @@
 import random
 import csv
+import xlsxwriter
+
 
 # Algoritmos
 # 0.2(C1) + 0.2(C2) + 0.2(Ex1) + 0.2(Ex2) + 0.1(P1) + 0.1(P2)
@@ -8,8 +10,8 @@ import csv
 # curso_por_ciclo = [2018-2, 2019-1, 2019-2]
 NOTAS = []
 PORCENTAJES = []
-CICLOS = 1
-ALUMNOS_POR_CICLO = 40
+CICLOS = 5
+ALUMNOS_POR_CICLO = 50
 NUMERO_DE_ALUMNOS = CICLOS*ALUMNOS_POR_CICLO
 NOTA_MINIMA = 10.5
 NOTAS_POR_CICLO = []
@@ -53,14 +55,45 @@ def produceCSV(file_name, alumnos):
   headers = []
   for i in range(NOTAS[0]):
     headers.append("Nota"+str(i+1))
-  headers.append("Promedio")
   with open(file_name, mode='w') as gradesfile:
     writer = csv.writer(gradesfile, delimiter=',')
     writer.writerow(headers)
     for alumno in alumnos:
-      writer.writerow(alumno)
-def produceXLSX():
-  print("boop")
+      writer.writerow(alumno[0:-3])
+
+def produceXLSX(file_name, alumnos):
+  headers = []
+  aprobados = 0
+  for i in range(NOTAS[0]):
+    headers.append("Nota"+str(i+1))
+  headers.append("Probabilidad")
+  book = xlsxwriter.Workbook(file_name)
+  sheet = book.add_worksheet()
+  hformat = book.add_format({'bg_color':'#FFEFD5'})
+  passformat = book.add_format({'bg_color':'#5DE95D'})
+  failformat = book.add_format({'bg_color':'#EF5050'})
+  for i in range(len(headers)):
+    sheet.write(0, i, headers[i], hformat)
+  row=1
+  col=0
+  for grades in alumnos:
+    diferencia = NOTAS[0] - len(grades)
+    for i in range(len(grades)):
+      sheet.write(row, i, grades[i])
+    for j in range(i,NOTAS[0]):
+      sheet.write(row,j, "?")
+    if(grades[-1] > 0.6):
+      aprobados += 1
+      sheet.write(row, j+1, grades[-1], passformat)
+    else:
+      sheet.write(row, j+1, grades[-1], failformat)
+    row += 1
+  finalformat = book.add_format({'bg_color':'#B0C4DE', 'bold': True})
+  sheet.write(row,0  ,"Aprobados", finalformat)
+  for i in range(1,j+1):
+    sheet.write(row, i ,"", finalformat)
+  sheet.write(row,j+1,aprobados, finalformat)
+  book.close()
 
 def nuevo_estudiante():
   notas = []
@@ -81,10 +114,10 @@ def crearData(generate=False):
     alumno.append(promedio(alumno))
   for i in range(CICLOS):
     alumnos_de_curso = []
-    for j in range(ALUMNOS_POR_CICLO-1):
+    for j in range(ALUMNOS_POR_CICLO):
       alumnos_de_curso.append(nuevo_estudiante())
     if (generate):
-      produceCSV("CSVs/alumnos-ciclo"+str(i+1)+".csv",alumnos_de_curso)
+      produceCSV("CSVs/alumnos-mediociclo"+str(i+1)+".csv",alumnos_de_curso)
     NOTAS_POR_CICLO.append(alumnos_de_curso)
 
 def displayData():
@@ -112,8 +145,6 @@ def parseStudentGrades(file_name):
         csv_reader = csv.reader(csv_file, delimiter=',')
         line_count = 0
         for row in csv_reader:
-          if(len(row) < 1 or len(row) > NOTAS[0]):
-            raise Exception("Numero de notas incongruente en linea", line_count+1)
           grades=[]
           if line_count == 0:
             print(f'Column names are {", ".join(row)}')
@@ -122,7 +153,7 @@ def parseStudentGrades(file_name):
             for grade in row:
               grades.append(int(grade))
             line_count += 1
-            print(f'Processed {line_count} lines.')
+            print('Processed {line_count} lines.')
             all_grades.append(grades)
   return all_grades
 
@@ -159,6 +190,9 @@ def run():
       file_name = input("Ingrese nombre de archivo CSV: ")
       all_grades = parseStudentGrades(file_name)
       for student in all_grades:
-        print(getRate(student))
+        rate = getRate(student)
+        student.append(rate)
+        print(rate)
+      produceXLSX("prediction.xlsx", all_grades)
 
 run()
