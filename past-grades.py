@@ -1,7 +1,10 @@
 import random
 import csv
 import xlsxwriter
-
+import matplotlib.pyplot as plt
+import statistics
+import numpy as np
+import pandas as pd
 
 # Algoritmos
 # 0.2(C1) + 0.2(C2) + 0.2(Ex1) + 0.2(Ex2) + 0.1(P1) + 0.1(P2)
@@ -162,21 +165,44 @@ def parseStudentGrades(file_name):
 def chances(needed_grade, until):
   cont = 0
   # print(NOTAS_POR_CICLO)
-  for i in NOTAS_POR_CICLO:
-    for j in i:
+  for ciclo in NOTAS_POR_CICLO:
+    for nota in ciclo:
       # print("Array analizing is ", j)
-      nota = desdeExamen(j, until)
+      achieved = desdeExamen(nota, until)
       # print(nota)
-      if(nota >= needed_grade):
+      if(achieved >= needed_grade):
         cont += 1
         #print(cont, end=", ")
   return cont
 
+
+def chances2(needed_grade, until):
+  achieved = []
+  for ciclo in NOTAS_POR_CICLO:
+    for nota in ciclo:
+      single_achieved = desdeExamen(nota, until)
+      if(single_achieved >= needed_grade):
+        achieved.append(single_achieved)
+      #achieved.append(desdeExamen(nota, until))
+  mean = statistics.mean(achieved)
+  stdv = statistics.stdev(achieved)
+  print("Max = ", max(achieved))
+  print("Min = ", min(achieved))
+  print("Mean = ", mean)
+  print("DV = ", stdv)
+  data1 = np.random.normal(loc = mean, scale = stdv, size=100)
+  fig, axs = plt.subplots(figsize = (10,5))
+  axs.hist(achieved, bins = 25)
+  axs.set_title("Histogram")
+  plt.show()
+
+
 def getRate(notas):
   current_grade = hastaExamen(notas, len(notas))
   needed_grade = NOTA_MINIMA - current_grade
+  chances2(needed_grade, len(notas))
   #print("Needed grade is", needed_grade)
-  return chances(needed_grade, len(notas))/NUMERO_DE_ALUMNOS
+  return 1#chances(needed_grade, len(notas))/NUMERO_DE_ALUMNOS
 
 def run():
     getPercentages()
@@ -190,10 +216,11 @@ def run():
       rates = []
       file_name = input("Ingrese nombre de archivo CSV: ")
       all_grades = parseStudentGrades(file_name)
-      for student in all_grades:
-        rate = getRate(student)
-        student.append(rate)
+      rate = getRate(all_grades[0])
+      #for student in all_grades:
+        #rate = getRate(student)
+        # student.append(rate)
         # print(rate)
-      produceXLSX("prediccion_"+CURSO[0]+".xlsx", all_grades)
+      #produceXLSX("prediccion_"+CURSO[0]+".xlsx", all_grades)
 
 run()
