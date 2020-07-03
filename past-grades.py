@@ -180,6 +180,7 @@ def chances2(needed_grade, until):
   achieved = []
   for ciclo in NOTAS_POR_CICLO:
     for nota in ciclo:
+      print('a', nota)
       single_achieved = desdeExamen(nota, until)
       if(single_achieved >= needed_grade):
         achieved.append(single_achieved)

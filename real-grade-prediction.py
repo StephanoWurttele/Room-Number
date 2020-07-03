@@ -40,6 +40,7 @@ def getPercentages():
 
 def promedio(notas):
   prom = 0
+  print(NOTAS)
   for i in range(NOTAS[0]):
     prom += PORCENTAJES[i]*notas[i]
   return prom
@@ -128,33 +129,49 @@ def crearData(generate=False):
 
 def parseData(file_name):
   with open(file_name) as csv_file:
-        csv_reader = csv.reader(csv_file, delimiter=',')
-        line_count = 0
-        grades_row = 0
-        grades=[]
-        previo = ""
-        for row in csv_reader:
-          print(f'Column names are {", ".join(row)}')
-          for i in range(len(row)):
-            if(row[i] == "PUNTAJE"):
-              grades_row = i
-              break
-          line_count += 1
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    line_count = 1
+    grades_row = 0
+    grades=[]
+    # students=[]
+    ciclo = []
+    previo = ""
+    guide = 2
+    for row in csv_reader:
+      print(f'Column names are {", ".join(row)}')
+      for i in range(len(row)):
+        if(row[i] == "PUNTAJE"):
+          grades_row = i
           break
-        for row in csv_reader:
-          nombre = row[0]
-          if(nombre == previo):
-            if(row[grades_row].isnumeric()):
-              grades.append(row[grades_row])
-          else:
-            previo = nombre
-            NOTAS_POR_CICLO.append(grades)
-            grades = []
-            if(row[grades_row].isnumeric()):
-              grades.append(row[grades_row])
-          line_count += 1
-        NOTAS_POR_CICLO.append(grades)
-        del NOTAS_POR_CICLO[0]
+      line_count += 1
+      break
+    for row in csv_reader:
+      line_count += 1
+      nombre = row[0]
+      if(nombre == previo):
+        if(row[grades_row].isnumeric()):
+          if(guide%2 == 0):
+            grades.insert(0,int(row[grades_row]))
+          #  else:
+          #  students.insert(0,row[grades_row])
+          guide += 1
+          print("graded person is", row[1])
+      else:
+        previo = nombre
+        if(guide != 0):
+          print("grades", grades, "\n\n")
+          print("guide", guide)
+          print("person is", row[1])
+          print("line", line_count)
+          guide = 0
+          ciclo.append(grades)
+        grades = []
+        print("Gonna append average", row[grades_row])
+        if(row[grades_row].isnumeric()):
+          grades.insert(0,int(row[grades_row]))
+    ciclo.append(grades)
+    del ciclo[0]
+    NOTAS_POR_CICLO.append(ciclo)
 
 
 def displayData():
@@ -162,8 +179,6 @@ def displayData():
     print("NUEVO CICLO")
     for j in i:
       print(j)
-
-
 
 ## Estimate final grades and probabilities ---------------------
 def getStudentGrades():
@@ -195,9 +210,6 @@ def parseStudentGrades(file_name):
             all_grades.append(grades)
   return all_grades
 
-
-
-
 def chances(needed_grade, until):
   cont = 0
   # print(NOTAS_POR_CICLO)
@@ -215,6 +227,8 @@ def chances2(needed_grade, until):
   achieved = []
   for ciclo in NOTAS_POR_CICLO:
     for nota in ciclo:
+      print("Nota", nota)
+      print(until)
       single_achieved = desdeExamen(nota, until)
       if(single_achieved >= needed_grade):
         achieved.append(single_achieved)
@@ -225,26 +239,29 @@ def chances2(needed_grade, until):
   print("Min = ", min(achieved))
   print("Mean = ", mean)
   print("DV = ", stdv)
-  data1 = np.random.normal(loc = mean, scale = stdv, size=100)
+  data1 = np.random.normal(loc = mean, scale = stdv, size=1)
   fig, axs = plt.subplots(figsize = (10,5))
-  axs.hist(achieved, bins = 25)
+  axs.hist(achieved, bins = 20)
   axs.set_title("Histogram")
   plt.show()
 
-
-
-
 def getRate(notas):
-  current_grade = hastaExamen(notas, len(notas))
+  copia = notas[1].copy()
+  del copia[-1]
+  del copia[-1]
+  current_grade = hastaExamen(copia, len(copia))
   needed_grade = NOTA_MINIMA - current_grade
-  #chances2(needed_grade, len(notas))
+  print("current_grade is ", current_grade)
+  print("needed_grade is", needed_grade)
+  chances2(needed_grade, len(copia))
   #print("Needed grade is", needed_grade)
-  return chances(needed_grade, len(notas))/NUMERO_DE_ALUMNOS
+  #return chances(needed_grade, len(notas))/NUMERO_DE_ALUMNOS
 
 def run():
-    # getPercentages()
-    parseData("./CSVs/Data_mini.csv")
+    getPercentages()
+    parseData("./CSVs/DATA_full.csv")
     print(NOTAS_POR_CICLO)
+    getRate(NOTAS_POR_CICLO[0])
     # crearData()
     # print("Ingrese la opcion de prediccion (1 o 2): \n1) Nota singular\n2) CSV de notas\n")
     # opcion = input("")
