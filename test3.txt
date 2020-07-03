@@ -3,5 +3,5 @@ Estadistica
 0.33
 0.27
 0.4
-2
-CSVs/Data_mini.csv
+n
+CSVs/test.csv
