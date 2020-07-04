@@ -11,9 +11,9 @@ PORCENTAJES = []
 NOTA_MINIMA = 10.5
 HISTORIAL_NOTAS = []
 DISTRIBUCIONES = {}
-PRODUCIDO = []
+# PRODUCIDO = []
 
-def getPercentages():
+def obtenerPorcentajes():
   CURSO.append(input("Ingrese nombre del curso"))
   NOTAS.append(int(input("Ingrese el numero de notas en el curso de acuerdo a Intranet\nNumero: ")))
   print("Ingrese el peso de las notas en formato decimal. (Si vale 10%, colocar 0.1)")
@@ -122,7 +122,7 @@ def parseData(file_name, all):
           print("line", line_count)
           guide = 0
           HISTORIAL_NOTAS.append(grades)
-          PRODUCIDO.append(temp)
+          # PRODUCIDO.append(temp)
         grades = []
         temp = []
         print("Gonna append average", row[grades_row])
@@ -132,7 +132,8 @@ def parseData(file_name, all):
             aprobados += 1
     HISTORIAL_NOTAS.append(grades)
     del HISTORIAL_NOTAS[0]
-    del PRODUCIDO[0]
+    
+    # del PRODUCIDO[0]
     print("APROBARON ", aprobados, " ALUMNOS")
 
 def displayData():
@@ -158,10 +159,9 @@ def parseStudentGrades(file_name):
             grades.append(int(grade))
         line_count += 1
         all_grades.append(grades)
-        print(grades)
   return all_grades
 
-def chances2(needed_grade, until):
+def chances(needed_grade, until):
   if(until not in DISTRIBUCIONES):
     achieved = []
     for nota in HISTORIAL_NOTAS:
@@ -188,11 +188,11 @@ def chances2(needed_grade, until):
 def getRate(notas):
   current_grade = hastaExamen(notas, len(notas))
   needed_grade = NOTA_MINIMA - current_grade
-  return chances2(needed_grade, len(notas))
+  return chances(needed_grade, len(notas))
   #return chances(needed_grade, len(notas))/NUMERO_DE_ALUMNOS
 
 def run():
-    getPercentages()
+    obtenerPorcentajes()
     all = input("La data contiene datos de semana intermedia? y/n ") == "y"
     parseData("./CSVs/DATA_full.csv", all)
     file_name = input("Ingrese nombre de archivo CSV: ")
@@ -201,6 +201,6 @@ def run():
       rate = getRate(student)
       student.append(rate)
     produceXLSX("prediccion_"+CURSO[0]+"2.xlsx", all_grades)
-    produceCSV("test.csv", PRODUCIDO)
+    #produceCSV("test.csv", PRODUCIDO)
 
 run()
