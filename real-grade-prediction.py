@@ -11,7 +11,7 @@ PORCENTAJES = []
 NOTA_MINIMA = 10.5
 HISTORIAL_NOTAS = []
 DISTRIBUCIONES = {}
-# PRODUCIDO = []
+PRODUCIDO = []
 
 def obtenerPorcentajes():
   CURSO.append(input("Ingrese nombre del curso"))
@@ -81,6 +81,12 @@ def produceXLSX(file_name, alumnos):
   for i in range(1,j+1):
     sheet.write(row, i ,"", finalformat)
   sheet.write(row,j+1,aprobados, finalformat)
+  row+=1
+  sheet.write(row,0  ,"Reprobados", finalformat)
+  for i in range(1,j+1):
+    sheet.write(row, i ,"", finalformat)
+  sheet.write(row,j+1,row-aprobados-2, finalformat)
+
   print("\n\nArchivo guardado como: " + file_name)
   book.close()
 
@@ -88,6 +94,7 @@ def parseData(file_name, all):
   with open(file_name) as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     aprobados = 0
+    reprobados = 0
     line_count = 1
     grades_row = 0
     grades=[]
@@ -122,19 +129,22 @@ def parseData(file_name, all):
           print("line", line_count)
           guide = 0
           HISTORIAL_NOTAS.append(grades)
-          # PRODUCIDO.append(temp)
+          PRODUCIDO.append(temp)
         grades = []
         temp = []
         print("Gonna append average", row[grades_row])
         if(row[grades_row].isnumeric()):
           grades.insert(0,int(row[grades_row]))
-          if(int(row[grades_row]) > 10):
+          if(int(row[grades_row]) > 10.5):
             aprobados += 1
+          else:
+            reprobados += 1
     HISTORIAL_NOTAS.append(grades)
     del HISTORIAL_NOTAS[0]
     
-    # del PRODUCIDO[0]
+    del PRODUCIDO[0]
     print("APROBARON ", aprobados, " ALUMNOS")
+    print("REPROBARON ", reprobados, " ALUMNOS")
 
 def displayData():
   for i in HISTORIAL_NOTAS:
@@ -193,14 +203,20 @@ def getRate(notas):
 
 def run():
     obtenerPorcentajes()
-    all = input("La data contiene datos de semana intermedia? y/n ") == "y"
-    parseData("./CSVs/DATA_full.csv", all)
+
+    
+    all = input("La data contiene datos de semana intermedia? y/n ") == "n"
+    
+    
+    parseData("./CSVs/Estadistica_todo.csv", all)
+    
+    # produceCSV("CSVs/test_Estadistica_2019_1.csv", PRODUCIDO)
+
     file_name = input("Ingrese nombre de archivo CSV: ")
-    all_grades = parseStudentGrades(file_name)
+    all_grades = parseStudentGrades("CSVs/"+file_name+".csv")
     for student in all_grades:
       rate = getRate(student)
       student.append(rate)
-    produceXLSX("prediccion_"+CURSO[0]+"2.xlsx", all_grades)
-    #produceCSV("test.csv", PRODUCIDO)
+    produceXLSX("prediccion_"+file_name+".xlsx", all_grades)
 
 run()
