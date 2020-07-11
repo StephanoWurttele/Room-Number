@@ -3,5 +3,7 @@ Estadistica
 0.33
 0.27
 0.4
-y
+n
+609
+200
 test_Estadistica_2019_1

@@ -7,6 +7,8 @@ import scipy.stats
 import numpy as np
 CURSO = []
 NOTAS = []
+RATIO = []
+TOTAL = []
 PORCENTAJES = []
 NOTA_MINIMA = 10.5
 HISTORIAL_NOTAS = []
@@ -86,15 +88,34 @@ def produceXLSX(file_name, alumnos):
   for i in range(1,j+1):
     sheet.write(row, i ,"", finalformat)
   sheet.write(row,j+1,row-aprobados-2, finalformat)
-
+  print(row-aprobados-2)
+  print((TOTAL[1]-TOTAL[0]))
+  print(RATIO[0])
+  print(((row-aprobados-2) + (TOTAL[1]-TOTAL[0]))*RATIO[0])
+  print(((TOTAL[1]-TOTAL[0]))*RATIO[0]/45)
   print("\n\nArchivo guardado como: " + file_name)
   book.close()
+
+def parseHabiles(file_name):
+  rat = 0
+  line_count = 0
+  with open(file_name) as csv_file:
+    csv_reader = csv.reader(csv_file, delimiter=',')
+    for row in csv_reader:
+      if(line_count == 0):
+        print(f'Column names are {", ".join(row)}')
+      else:
+        print(int(row[2])/int(row[1]))
+        rat += int(row[2])/int(row[1])
+      line_count += 1
+  RATIO.append(rat/(line_count-1))
 
 def parseData(file_name, all):
   with open(file_name) as csv_file:
     csv_reader = csv.reader(csv_file, delimiter=',')
     aprobados = 0
     reprobados = 0
+    retirados = 0
     line_count = 1
     grades_row = 0
     grades=[]
@@ -119,14 +140,14 @@ def parseData(file_name, all):
           else:
             temp.insert(0,int(row[grades_row]))
           guide += 1
-          print("graded person is", row[1])
+          #print("graded person is", row[1])
       else:
         previo = nombre
         if(guide != 0):
-          print("grades", grades, "\n\n")
-          print("guide", guide)
-          print("person is", row[1])
-          print("line", line_count)
+          #print("grades", grades, "\n\n")
+          #print("guide", guide)
+          #print("person is", row[1])
+          #print("line", line_count)
           guide = 0
           HISTORIAL_NOTAS.append(grades)
           PRODUCIDO.append(temp)
@@ -139,12 +160,17 @@ def parseData(file_name, all):
             aprobados += 1
           else:
             reprobados += 1
+        else:
+          retirados += 1
     HISTORIAL_NOTAS.append(grades)
     del HISTORIAL_NOTAS[0]
     
     del PRODUCIDO[0]
     print("APROBARON ", aprobados, " ALUMNOS")
     print("REPROBARON ", reprobados, " ALUMNOS")
+    print("RETIRADOS ", retirados, " ALUMNOS")
+    TOTAL.append(aprobados)
+
 
 def displayData():
   for i in HISTORIAL_NOTAS:
@@ -203,15 +229,22 @@ def getRate(notas):
 
 def run():
     obtenerPorcentajes()
-
+    parsing_file = "Estadistica_2019_1.csv"
+    parsing_habiles = "Parsing_h4b1l3s.csv"
+    all = False
+    new_parse = input("¿Va a ingresar datos nuevos con los que hacer el análisis? Recuerde que tiene que usar el formato definido y estar dentro de la carpeta 'CSVs'. (y/n) ") == "y"
+    if new_parse:
+      parsing_file = input("Ingresa nombre del archivo con datos para parsear: ")
+      all = input("La data contiene datos de semana intermedia? y/n ") == "n"
     
-    all = input("La data contiene datos de semana intermedia? y/n ") == "n"
     
-    
-    parseData("./CSVs/Estadistica_todo.csv", all)
-    
+    parseData("./CSVs/" + parsing_file, all)
+    parseHabiles("./CSVs/" + parsing_habiles)
     # produceCSV("CSVs/test_Estadistica_2019_1.csv", PRODUCIDO)
 
+    total = int(input("Ingrese el número total de alumnos habilitados para el actual ciclo: "))
+    TOTAL.append(total)
+    TOTAL[1] += int(input("Ingrese el numero aproximado de alumnos que estaran habilitados el siguiente ciclo"))
     file_name = input("Ingrese nombre de archivo CSV: ")
     all_grades = parseStudentGrades("CSVs/"+file_name+".csv")
     for student in all_grades:
