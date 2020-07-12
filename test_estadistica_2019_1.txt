@@ -1,4 +1,5 @@
 Estadistica
+45
 3
 0.33
 0.27

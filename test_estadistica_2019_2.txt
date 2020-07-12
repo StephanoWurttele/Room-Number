@@ -1,7 +1,13 @@
 Estadistica
+45
 3
 0.33
 0.27
 0.4
 y
+Estadistica_todo
+y
+Parsing_h4b1l3s
+609
+200
 test_Estadistica_2019_2

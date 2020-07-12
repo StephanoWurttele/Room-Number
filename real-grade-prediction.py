@@ -1,4 +1,5 @@
 import random
+import math
 import csv
 import xlsxwriter
 import matplotlib.pyplot as plt
@@ -9,6 +10,7 @@ CURSO = []
 NOTAS = []
 RATIO = []
 TOTAL = []
+MAX_POR_SALON = []
 PORCENTAJES = []
 NOTA_MINIMA = 10.5
 HISTORIAL_NOTAS = []
@@ -17,6 +19,7 @@ PRODUCIDO = []
 
 def obtenerPorcentajes():
   CURSO.append(input("Ingrese nombre del curso"))
+  MAX_POR_SALON.append(int(input("Numero de alumnos por sección en el curso:")))
   NOTAS.append(int(input("Ingrese el numero de notas en el curso de acuerdo a Intranet\nNumero: ")))
   print("Ingrese el peso de las notas en formato decimal. (Si vale 10%, colocar 0.1)")
   for i in range(NOTAS[0]):
@@ -88,11 +91,12 @@ def produceXLSX(file_name, alumnos):
   for i in range(1,j+1):
     sheet.write(row, i ,"", finalformat)
   sheet.write(row,j+1,row-aprobados-2, finalformat)
-  print(row-aprobados-2)
-  print((TOTAL[1]-TOTAL[0]))
-  print(RATIO[0])
-  print(((row-aprobados-2) + (TOTAL[1]-TOTAL[0]))*RATIO[0])
-  print(((TOTAL[1]-TOTAL[0]))*RATIO[0]/45)
+  row+=2
+  sheet.write(row,0 ,"Habiles", finalformat)
+  sheet.write(row,1 ,"Salones", finalformat)
+  row+=1
+  sheet.write(row,0 , TOTAL[1]-TOTAL[0], finalformat)
+  sheet.write(row,1 , math.ceil((TOTAL[1]-TOTAL[0])*RATIO[0]/MAX_POR_SALON[0]), finalformat)
   print("\n\nArchivo guardado como: " + file_name)
   book.close()
 
@@ -153,7 +157,7 @@ def parseData(file_name, all):
           PRODUCIDO.append(temp)
         grades = []
         temp = []
-        print("Gonna append average", row[grades_row])
+        #print("Gonna append average", row[grades_row])
         if(row[grades_row].isnumeric()):
           grades.insert(0,int(row[grades_row]))
           if(int(row[grades_row]) > 10.5):
@@ -229,17 +233,18 @@ def getRate(notas):
 
 def run():
     obtenerPorcentajes()
-    parsing_file = "Estadistica_2019_1.csv"
-    parsing_habiles = "Parsing_h4b1l3s.csv"
+    parsing_file = "Estadistica_2019_1"
+    parsing_habiles = "Parsing_h4b1l3s"
     all = False
     new_parse = input("¿Va a ingresar datos nuevos con los que hacer el análisis? Recuerde que tiene que usar el formato definido y estar dentro de la carpeta 'CSVs'. (y/n) ") == "y"
     if new_parse:
-      parsing_file = input("Ingresa nombre del archivo con datos para parsear: ")
+      parsing_file = input("Ingrese nombre del archivo con datos para parsear: ")
       all = input("La data contiene datos de semana intermedia? y/n ") == "n"
+      parsing_habiles = input("Ingrese nombre de archivo con datos de alumnos habiles: ")
     
     
-    parseData("./CSVs/" + parsing_file, all)
-    parseHabiles("./CSVs/" + parsing_habiles)
+    parseData("./CSVs/" + parsing_file+".csv", all)
+    parseHabiles("./CSVs/" + parsing_habiles+".csv")
     # produceCSV("CSVs/test_Estadistica_2019_1.csv", PRODUCIDO)
 
     total = int(input("Ingrese el número total de alumnos habilitados para el actual ciclo: "))
