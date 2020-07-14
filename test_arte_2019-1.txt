@@ -1,0 +1,14 @@
+Arte
+45
+4
+0.30
+0.20
+0.20
+0.30
+y
+Arte_2019_1
+n
+Parsing_h4b1l3s_arte
+553
+200
+test_Arte_2019_1

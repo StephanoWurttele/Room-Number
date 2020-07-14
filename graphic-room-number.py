@@ -1,3 +1,4 @@
+from tkinter import *
 import random
 import math
 import csv
@@ -16,6 +17,9 @@ NOTA_MINIMA = 10.5
 HISTORIAL_NOTAS = []
 DISTRIBUCIONES = {}
 PRODUCIDO = []
+PARSING_FILE = ["Estadistica_2019_1"]
+PARSING_HABILES = ["Parsing_h4b1l3s"]
+ALL = [False]
 
 def obtenerPorcentajes():
   CURSO.append(input("Ingrese nombre del curso"))
@@ -141,8 +145,6 @@ def parseData(file_name, all):
         if(row[grades_row].isnumeric()):
           if(guide%2 == 0 or all):
             grades.insert(0,int(row[grades_row]))
-            if(all):
-              temp.insert(0,int(row[grades_row]))
           else:
             temp.insert(0,int(row[grades_row]))
           guide += 1
@@ -233,21 +235,16 @@ def getRate(notas):
   return chances(needed_grade, len(notas))
   #return chances(needed_grade, len(notas))/NUMERO_DE_ALUMNOS
 
+def parse():
+    PARSING_FILE[0] = data_file_name.get()
+    ALL[0] = var.get() == "n"
+    PARSING_HABILES[0] = habiles_file_name.get()
+
 def run():
     obtenerPorcentajes()
-    parsing_file = "Estadistica_2019_1"
-    parsing_habiles = "Parsing_h4b1l3s"
-    all = False
-    new_parse = input("¿Va a ingresar datos nuevos con los que hacer el análisis? Recuerde que tiene que usar el formato definido y estar dentro de la carpeta 'CSVs'. (y/n) ") == "y"
-    if new_parse:
-      parsing_file = input("Ingrese nombre del archivo con datos para parsear: ")
-      all = input("La data contiene datos de semana intermedia? y/n ") == "n"
-      parsing_habiles = input("Ingrese nombre de archivo con datos de alumnos habiles: ")
-    
-    
-    parseData("./CSVs/" + parsing_file+".csv", all)
-    parseHabiles("./CSVs/" + parsing_habiles+".csv")
-    produceCSV("CSVs/test_Arte_2019_1.csv", PRODUCIDO)
+    parseData("./CSVs/" + PARSING_FILE[0] + ".csv", ALL[0])
+    parseHabiles("./CSVs/" + PARSING_HABILES[0] +".csv")
+    # produceCSV("CSVs/test_Estadistica_2019_1.csv", PRODUCIDO)
 
     total = int(input("Ingrese el número total de alumnos habilitados para el actual ciclo: "))
     TOTAL.append(total)
@@ -259,4 +256,96 @@ def run():
       student.append(rate)
     produceXLSX("prediccion_"+file_name+".xlsx", all_grades)
 
-run()
+
+def parseAndClose():
+  print(habiles_file_name.get())
+  parse()
+  top.destroy()
+
+def openParse():
+  global data_file_name
+  global habiles_file_name
+  global var
+  global top
+  top = Toplevel()
+  top.title("Parseo")
+  top.geometry("500x200")
+  data_text = Label(top, text="Nombre de archivo con data historica: ")
+  var = IntVar()
+  c = Checkbutton(top, text="¿Data contiene datos intermedios de ciclo?", variable=var)
+  c.deselect()
+  data_file_name = Entry(top)
+  habiles_text = Label(top, text="Nombre de archivo con alumnos habiles: ")
+  habiles_file_name = Entry(top)
+  submit = Button(top, text="Submit", command=parseAndClose)
+  data_text.pack()
+  c.pack()
+  data_file_name.pack()
+  habiles_text.pack()
+  habiles_file_name.pack()
+  submit.pack()
+
+def gradesNumber():
+  try:
+    mensaje.config(text="")
+    for i in notasInput:
+      for j in i:
+        j.pack_forget()
+    notasInput.clear()
+    for i in range(int(sv.get())):
+      temp1 = Label(top, text="Nota"+str(i+1)+":")
+      temp2 = Entry(top)
+      temp3 = [temp1, temp2]
+      notasInput.append(temp3)
+    for i in notasInput:
+      for j in i:
+        j.pack()
+    print(int(sv.get()))
+  except ValueError:
+    mensaje.config(text="Por favor, ingrese un numero en el numero de alumnos por salon")
+def openEjecutar():
+  global courseName
+  global maxStudents
+  global numberGrades
+  global sv
+  global top
+  global mensaje
+  global notasInput
+  notasInput=[]
+  top = Toplevel()
+  top.title("Run data")
+  top.geometry("500x200")
+  course_text = Label(top, text="Nombre de curso: ")
+  courseName = Entry(top)
+  maxstudents_text = Label(top, text="Numero maximo de alumnos por salon: ")
+  maxStudents = Entry(top)
+  sv = StringVar()
+  sv.trace("w", lambda name, index, mode, sv=sv: gradesNumber())
+  number_text = Label(top, text="Numero de notas de curso: ")
+  numberGrades = Entry(top, textvariable = sv)
+  mensaje = Label(top, text="")
+  submit = Button(top, text="Submit", command=parseAndClose, state=DISABLED)
+  course_text.pack(pady=(20,5))
+  courseName.pack()
+  maxstudents_text.pack(pady=(20,5))
+  maxStudents.pack()
+  number_text.pack(pady=(20,5))
+  numberGrades.pack()
+  mensaje.pack()
+  
+
+BGCOLOR = "#EFF0F1"
+root = Tk()
+root.configure(background=BGCOLOR)
+root.geometry("500x200")
+
+title = Label(root, text="Prediccion de salones", bg=BGCOLOR)
+parsear = Button(root, text = "Ingresar nuevos datos para sistema", command = openParse)
+ejecutar = Button(root, text = "Correr prediccion", command=openEjecutar)
+
+title.pack()
+parsear.pack(expand = 1)
+ejecutar.pack(expand = 1)
+
+mainloop()
+#run()
