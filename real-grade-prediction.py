@@ -96,7 +96,10 @@ def produceXLSX(file_name, alumnos):
   sheet.write(row,1 ,"Salones", finalformat)
   row+=1
   sheet.write(row,0 , TOTAL[1]-TOTAL[0], finalformat)
-  sheet.write(row,1 , math.ceil((TOTAL[1]-TOTAL[0])*RATIO[0]/MAX_POR_SALON[0]), finalformat)
+  print("----------------------------------------------------")
+  print(TOTAL[1])
+  print(TOTAL[0])
+  sheet.write(row,1 , (TOTAL[1]-TOTAL[0])*RATIO[0]/MAX_POR_SALON[0], finalformat)
   print("\n\nArchivo guardado como: " + file_name)
   book.close()
 
@@ -109,9 +112,12 @@ def parseHabiles(file_name):
       if(line_count == 0):
         print(f'Column names are {", ".join(row)}')
       else:
+        print(row[2])
+        print(row[1])
         print(int(row[2])/int(row[1]))
         rat += int(row[2])/int(row[1])
       line_count += 1
+  print("line count - 1 = ", (line_count-1))
   RATIO.append(rat/(line_count-1))
 
 def parseData(file_name, all):
@@ -175,8 +181,9 @@ def parseData(file_name, all):
     print("APROBARON ", aprobados, " ALUMNOS")
     print("REPROBARON ", reprobados, " ALUMNOS")
     print("RETIRADOS ", retirados, " ALUMNOS")
+    print(TOTAL)
     TOTAL.append(aprobados)
-
+    print(TOTAL)
 
 def displayData():
   for i in HISTORIAL_NOTAS:
@@ -212,10 +219,6 @@ def chances(needed_grade, until):
       #achieved.append(desdeExamen(nota, until))
     mean = statistics.mean(achieved)
     stdv = statistics.stdev(achieved)
-    print("Max = ", max(achieved))
-    print("Min = ", min(achieved))
-    print("Mean = ", mean)
-    print("DV = ", stdv)
     nd = scipy.stats.norm(mean, stdv)
     DISTRIBUCIONES[until] = nd
   distribucion = DISTRIBUCIONES[until]
