@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import statistics
 import scipy.stats
 import numpy as np
-CURSO = []
 NOTAS = []
 RATIO = []
 TOTAL = []
@@ -22,7 +21,6 @@ PARSING_HABILES = ["Parsing_h4b1l3s"]
 ALL = [False]
 
 def obtenerPorcentajes():
-  CURSO.append(courseName.get())
   MAX_POR_SALON.append(int(maxStudents.get()))
   NOTAS.append(int(numberGrades.get()))
   for i in range(len(notasInput)):
@@ -41,7 +39,9 @@ def desdeExamen(notas, numero):
   return promedio(duplicado)
 
 def hastaExamen(notas, numero):
-  duplicado = [0,0,0,0,0,0,0]
+  duplicado = []
+  for i in range(NOTAS[0]):
+    duplicado.append(0)
   for i in range(numero):
     duplicado[i] = notas[i];
   return promedio(duplicado)
@@ -98,7 +98,7 @@ def produceXLSX(file_name, alumnos):
   sheet.write(row,1 ,"Salones", finalformat)
   row+=1
   sheet.write(row,0 , TOTAL[1]-TOTAL[0], finalformat)
-  sheet.write(row,1 , math.ceil((TOTAL[1]-TOTAL[0])*RATIO[0]/MAX_POR_SALON[0]), finalformat)
+  sheet.write(row,1 , (TOTAL[1]-TOTAL[0])*RATIO[0]/MAX_POR_SALON[0], finalformat)
   print("\n\nArchivo guardado como: " + file_name)
   book.close()
 
@@ -111,7 +111,6 @@ def parseHabiles(file_name):
       if(line_count == 0):
         print(f'Column names are {", ".join(row)}')
       else:
-        print(int(row[2])/int(row[1]))
         rat += int(row[2])/int(row[1])
       line_count += 1
   RATIO.append(rat/(line_count-1))
@@ -129,7 +128,6 @@ def parseData(file_name, all):
     previo = ""
     guide = 2
     for row in csv_reader:
-      print(f'Column names are {", ".join(row)}')
       for i in range(len(row)):
         if(row[i] == "PUNTAJE"):
           grades_row = i
@@ -143,23 +141,19 @@ def parseData(file_name, all):
         if(row[grades_row].isnumeric()):
           if(guide%2 == 0 or all):
             grades.insert(0,int(row[grades_row]))
+            if(all):
+              temp.insert(0,int(row[grades_row]))
           else:
             temp.insert(0,int(row[grades_row]))
           guide += 1
-          #print("graded person is", row[1])
       else:
         previo = nombre
         if(guide != 0):
-          #print("grades", grades, "\n\n")
-          #print("guide", guide)
-          #print("person is", row[1])
-          #print("line", line_count)
           guide = 0
           HISTORIAL_NOTAS.append(grades)
           PRODUCIDO.append(temp)
         grades = []
         temp = []
-        #print("Gonna append average", row[grades_row])
         if(row[grades_row].isnumeric()):
           grades.insert(0,int(row[grades_row]))
           if(int(row[grades_row]) > 10.5):
@@ -172,16 +166,7 @@ def parseData(file_name, all):
     del HISTORIAL_NOTAS[0]
     
     del PRODUCIDO[0]
-    print("APROBARON ", aprobados, " ALUMNOS")
-    print("REPROBARON ", reprobados, " ALUMNOS")
-    print("RETIRADOS ", retirados, " ALUMNOS")
     TOTAL.append(aprobados)
-
-def displayData():
-  for i in HISTORIAL_NOTAS:
-    print("NUEVO CICLO")
-    for j in i:
-      print(j)
 
 ## Estimate final grades and probabilities ---------------------
 def parseStudentGrades(file_name):
@@ -192,7 +177,6 @@ def parseStudentGrades(file_name):
     for row in csv_reader:
       grades=[]
       if line_count == 0:
-        print(f'Column names are {", ".join(row)}')
         line_count += 1
       else:
         for grade in row:
@@ -211,19 +195,10 @@ def chances(needed_grade, until):
       #achieved.append(desdeExamen(nota, until))
     mean = statistics.mean(achieved)
     stdv = statistics.stdev(achieved)
-    print("Max = ", max(achieved))
-    print("Min = ", min(achieved))
-    print("Mean = ", mean)
-    print("DV = ", stdv)
     nd = scipy.stats.norm(mean, stdv)
     DISTRIBUCIONES[until] = nd
   distribucion = DISTRIBUCIONES[until]
   prob = 1-distribucion.cdf(needed_grade)
-  # data1 = np.random.normal(loc = mean, scale = stdv, size=1)
-  # fig, axs = plt.subplots(figsize = (10,5))
-  # axs.hist(achieved, bins = 20)
-  # axs.set_title("Histogram")
-  # plt.show()
   return prob
 
 def getRate(notas):
@@ -234,7 +209,7 @@ def getRate(notas):
 
 def parse():
     PARSING_FILE[0] = data_file_name.get()
-    ALL[0] = var.get() == "n"
+    ALL[0] = var.get() == 0
     PARSING_HABILES[0] = habiles_file_name.get()
 
 def run():
@@ -245,7 +220,7 @@ def run():
 
     TOTAL.append(int(numberHabiles.get()))
     TOTAL[1] += int(numberNuevos.get())
-    file_name = "test_Estadistica_2019_1"
+    file_name = currentGrades.get()
     all_grades = parseStudentGrades("CSVs/"+file_name+".csv")
     for student in all_grades:
       rate = getRate(student)
@@ -371,7 +346,6 @@ def gradesNumber():
         notasInputVars[i][1].pack()
   except ValueError:
     mensaje_notas.config(text="Por favor, ingrese un numero en el numero de notas")
-    print(mensaje_notas.cget("text"))
   showSubmit()
 
 def executeAndClose():
@@ -381,7 +355,7 @@ def executeAndClose():
 def openEjecutar():
   global habiles_text
   global nuevos_text
-  global courseName
+  global currentGrades
   global maxStudents
   global numberGrades
   global numberHabiles
@@ -406,8 +380,8 @@ def openEjecutar():
   scroll = Scrollbar(top, orient=VERTICAL)
   scroll.pack(side=RIGHT, fill=Y)
 
-  course_text = Label(top, text="Nombre de curso: ")
-  courseName = Entry(top)
+  course_text = Label(top, text="Nombre de archivo con notas: ")
+  currentGrades = Entry(top)
 
   sv_alumnos = StringVar()
   sv_alumnos.trace("w", lambda name, index, mode, sv_alumnos=sv_alumnos: studNumber())
@@ -436,7 +410,7 @@ def openEjecutar():
   submit = Button(top, text="Submit", command=executeAndClose, state=DISABLED)
 
   course_text.pack(pady=(20,5))
-  courseName.pack()
+  currentGrades.pack()
 
   maxstudents_text.pack(pady=(20,5))
   maxStudents.pack()
