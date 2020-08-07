@@ -97,8 +97,8 @@ def produceXLSX(file_name, alumnos):
   sheet.write(row,0 ,"Habiles", finalformat)
   sheet.write(row,1 ,"Salones", finalformat)
   row+=1
-  sheet.write(row,0 , TOTAL[1]-TOTAL[0], finalformat)
-  sheet.write(row,1 , (TOTAL[1]-TOTAL[0])*RATIO[0]/MAX_POR_SALON[0], finalformat)
+  sheet.write(row,0 , TOTAL[1]-aprobados, finalformat)
+  sheet.write(row,1 , (TOTAL[1]-aprobados)*RATIO[0]/MAX_POR_SALON[0], finalformat)
   print("\n\nArchivo guardado como: " + file_name)
   book.close()
 
@@ -171,10 +171,10 @@ def parseData(file_name, all):
 ## Estimate final grades and probabilities ---------------------
 def parseStudentGrades(file_name):
   all_grades = []
-  with open(file_name) as csv_file:
-    csv_reader = csv.reader(csv_file, delimiter=',')
+  with open(file_name) as csv_file2:
+    csv_reader2 = csv.reader(csv_file2, delimiter=',')
     line_count = 0
-    for row in csv_reader:
+    for row in csv_reader2:
       grades=[]
       if line_count == 0:
         line_count += 1

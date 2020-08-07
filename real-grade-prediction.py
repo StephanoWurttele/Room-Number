@@ -39,7 +39,9 @@ def desdeExamen(notas, numero):
   return promedio(duplicado)
 
 def hastaExamen(notas, numero):
-  duplicado = [0,0,0,0,0,0,0]
+  duplicado = []
+  for i in range(NOTAS[0]):
+    duplicado.append(0)
   for i in range(numero):
     duplicado[i] = notas[i];
   return promedio(duplicado)
@@ -95,11 +97,8 @@ def produceXLSX(file_name, alumnos):
   sheet.write(row,0 ,"Habiles", finalformat)
   sheet.write(row,1 ,"Salones", finalformat)
   row+=1
-  sheet.write(row,0 , TOTAL[1]-TOTAL[0], finalformat)
-  print("----------------------------------------------------")
-  print(TOTAL[1])
-  print(TOTAL[0])
-  sheet.write(row,1 , (TOTAL[1]-TOTAL[0])*RATIO[0]/MAX_POR_SALON[0], finalformat)
+  sheet.write(row,0 , TOTAL[1]-aprobados, finalformat)
+  sheet.write(row,1 , (TOTAL[1]-aprobados)*RATIO[0]/MAX_POR_SALON[0], finalformat)
   print("\n\nArchivo guardado como: " + file_name)
   book.close()
 
@@ -112,12 +111,8 @@ def parseHabiles(file_name):
       if(line_count == 0):
         print(f'Column names are {", ".join(row)}')
       else:
-        print(row[2])
-        print(row[1])
-        print(int(row[2])/int(row[1]))
         rat += int(row[2])/int(row[1])
       line_count += 1
-  print("line count - 1 = ", (line_count-1))
   RATIO.append(rat/(line_count-1))
 
 def parseData(file_name, all):
@@ -152,20 +147,14 @@ def parseData(file_name, all):
           else:
             temp.insert(0,int(row[grades_row]))
           guide += 1
-          #print("graded person is", row[1])
       else:
         previo = nombre
         if(guide != 0):
-          #print("grades", grades, "\n\n")
-          #print("guide", guide)
-          #print("person is", row[1])
-          #print("line", line_count)
           guide = 0
           HISTORIAL_NOTAS.append(grades)
           PRODUCIDO.append(temp)
         grades = []
         temp = []
-        #print("Gonna append average", row[grades_row])
         if(row[grades_row].isnumeric()):
           grades.insert(0,int(row[grades_row]))
           if(int(row[grades_row]) > 10.5):
@@ -178,26 +167,15 @@ def parseData(file_name, all):
     del HISTORIAL_NOTAS[0]
     
     del PRODUCIDO[0]
-    print("APROBARON ", aprobados, " ALUMNOS")
-    print("REPROBARON ", reprobados, " ALUMNOS")
-    print("RETIRADOS ", retirados, " ALUMNOS")
-    print(TOTAL)
     TOTAL.append(aprobados)
-    print(TOTAL)
-
-def displayData():
-  for i in HISTORIAL_NOTAS:
-    print("NUEVO CICLO")
-    for j in i:
-      print(j)
 
 ## Estimate final grades and probabilities ---------------------
 def parseStudentGrades(file_name):
   all_grades = []
-  with open(file_name) as csv_file:
-    csv_reader = csv.reader(csv_file, delimiter=',')
+  with open(file_name) as csv_file2:
+    csv_reader2 = csv.reader(csv_file2, delimiter=',')
     line_count = 0
-    for row in csv_reader:
+    for row in csv_reader2:
       grades=[]
       if line_count == 0:
         print(f'Column names are {", ".join(row)}')
@@ -216,7 +194,6 @@ def chances(needed_grade, until):
     for nota in HISTORIAL_NOTAS:
       single_achieved = desdeExamen(nota, until)
       achieved.append(single_achieved)
-      #achieved.append(desdeExamen(nota, until))
     mean = statistics.mean(achieved)
     stdv = statistics.stdev(achieved)
     nd = scipy.stats.norm(mean, stdv)
@@ -234,11 +211,10 @@ def getRate(notas):
   current_grade = hastaExamen(notas, len(notas))
   needed_grade = NOTA_MINIMA - current_grade
   return chances(needed_grade, len(notas))
-  #return chances(needed_grade, len(notas))/NUMERO_DE_ALUMNOS
 
 def run():
     obtenerPorcentajes()
-    parsing_file = "Estadistica_2019_1"
+    parsing_file = "Estadistica_todo"
     parsing_habiles = "Parsing_h4b1l3s"
     all = False
     new_parse = input("¿Va a ingresar datos nuevos con los que hacer el análisis? Recuerde que tiene que usar el formato definido y estar dentro de la carpeta 'CSVs'. (y/n) ") == "y"
@@ -250,7 +226,7 @@ def run():
     
     parseData("./CSVs/" + parsing_file+".csv", all)
     parseHabiles("./CSVs/" + parsing_habiles+".csv")
-    produceCSV("CSVs/test_Arte_2019_1.csv", PRODUCIDO)
+    #produceCSV("CSVs/test_Arte_2019_1.csv", PRODUCIDO)
 
     total = int(input("Ingrese el número total de alumnos habilitados para el actual ciclo: "))
     TOTAL.append(total)

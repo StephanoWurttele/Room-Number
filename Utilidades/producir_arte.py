@@ -46,4 +46,4 @@ def parseData(input, output):
           changed = True
           previo = row[0]
 
-parseData("./CSVs/raw_arte.csv", "./CSVs/Arte_2019_1.csv")
+parseData("./CSVs/raw_arte2.csv", "./CSVs/Arte_2019_2.csv")
